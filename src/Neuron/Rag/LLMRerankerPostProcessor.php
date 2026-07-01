@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Neuron\Rag;
 
+use NeuronAI\Agent\Agent;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\UserMessage;
 use NeuronAI\Providers\AIProviderInterface;
@@ -13,10 +14,11 @@ use NeuronAI\RAG\PostProcessor\PostProcessorInterface;
  * Reranks retrieved documents with an LLM instead of a dedicated rerank API.
  *
  * The candidate documents (already narrowed by vector similarity) are handed to
- * the model, which returns their indexes ordered from most to least relevant to
- * the question. The top N are kept. If the model output cannot be parsed, the
- * original similarity order is preserved so retrieval never hard-fails on a
- * flaky rerank.
+ * a fluent agent that returns a validated {@see Ranking} — their indexes ordered
+ * from most to least relevant to the question. The top N are kept. The agent's
+ * structured output does the JSON parsing, validation and inference retry
+ * built-in; if it still fails, the original similarity order is preserved so
+ * retrieval never hard-fails on a flaky rerank.
  */
 final readonly class LLMRerankerPostProcessor implements PostProcessorInterface
 {
@@ -41,13 +43,6 @@ final readonly class LLMRerankerPostProcessor implements PostProcessorInterface
         $query = (string) $question->getContent();
 
         $prompt = <<<PROMPT
-            You are a search result reranker. Given a user query and a numbered
-            list of candidate documents, return the indexes ordered from most to
-            least relevant to the query.
-
-            Respond with ONLY a JSON array of integers, most relevant first, no
-            prose. Example: [2,0,1]
-
             Query:
             {$query}
 
@@ -56,8 +51,17 @@ final readonly class LLMRerankerPostProcessor implements PostProcessorInterface
             PROMPT;
 
         try {
-            $response = $this->provider->chat(new UserMessage($prompt));
-            $order = $this->parseOrder((string) $response->getContent(), \count($documents));
+            $agent = Agent::make();
+            $agent->setAiProvider($this->provider);
+            $agent->setInstructions(
+                'You are a search result reranker. Given a user query and a '
+                . 'numbered list of candidate documents, return the indexes '
+                . 'ordered from most to least relevant to the query.',
+            );
+
+            /** @var Ranking $ranking */
+            $ranking = $agent->structured(new UserMessage($prompt), Ranking::class);
+            $order = $this->sanitizeOrder($ranking->list, \count($documents));
         } catch (\Throwable) {
             $order = [];
         }
@@ -80,26 +84,19 @@ final readonly class LLMRerankerPostProcessor implements PostProcessorInterface
     }
 
     /**
-     * Parse a JSON array of integer indexes, dropping out-of-range / duplicate
-     * entries. Tolerates surrounding text by extracting the first [...] block.
+     * Drop out-of-range and duplicate indexes from the model's ranking. Type
+     * validation is already handled by the structured output layer.
+     *
+     * @param list<int> $list
      *
      * @return list<int>
      */
-    private function parseOrder(string $content, int $count): array
+    private function sanitizeOrder(array $list, int $count): array
     {
-        if (1 !== preg_match('/\[[^\]]*\]/s', $content, $matches)) {
-            return [];
-        }
-
-        $decoded = json_decode($matches[0], true);
-        if (!\is_array($decoded)) {
-            return [];
-        }
-
         $seen = [];
         $order = [];
-        foreach ($decoded as $value) {
-            if (!\is_int($value) || $value < 0 || $value >= $count || isset($seen[$value])) {
+        foreach ($list as $value) {
+            if ($value < 0 || $value >= $count || isset($seen[$value])) {
                 continue;
             }
             $seen[$value] = true;
