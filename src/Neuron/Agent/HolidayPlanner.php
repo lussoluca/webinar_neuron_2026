@@ -15,10 +15,17 @@ use NeuronAI\Providers\Anthropic\Anthropic;
 
 class HolidayPlanner extends Agent {
 
+    public function __construct(
+        private readonly string $anthropicApiKey,
+        private readonly RestaurantTool $restaurantTool,
+    ) {
+        parent::__construct();
+    }
+
     protected function provider(): AIProviderInterface {
         return new Anthropic(
-            key: $_ENV['ANTHROPIC_API_KEY'],
-            model: 'claude-sonnet-4-5-20250929',
+            key: $this->anthropicApiKey,
+            model: 'claude-sonnet-5',
         );
     }
 
@@ -48,7 +55,7 @@ class HolidayPlanner extends Agent {
         return [
             DayTool::make(),
             WeatherTool::make(),
-            RestaurantTool::make(),
+            $this->restaurantTool,
             A2UIRenderTool::make(),
         ];
     }

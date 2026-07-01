@@ -24,6 +24,7 @@ final class NeuronChatCompletionsController extends AbstractController {
 
     public function __construct(
         private readonly CacheInterface $cache,
+        private readonly HolidayPlanner $agent,
     ) {}
 
     public function __invoke(Request $request): Response {
@@ -40,7 +41,7 @@ final class NeuronChatCompletionsController extends AbstractController {
         return new SseResponse(
             function() use ($input, $adapter): void {
                 try {
-                    $agent = new HolidayPlanner();
+                    $agent = $this->agent;
                     $agent->setChatHistory(
                         new CacheAwareChatHistory(
                             $this->cache, $input->threadId

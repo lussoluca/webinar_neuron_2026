@@ -42,6 +42,8 @@ final class RestaurantTool extends Tool
     private ?FileVectorStore $vectorStore = null;
 
     public function __construct(
+        string $openaiApiKey,
+        string $anthropicApiKey,
         ?EmbeddingsProviderInterface $embeddingsProvider = null,
         ?AIProviderInterface $rerankProvider = null,
         private readonly int $topN = 3,
@@ -56,11 +58,11 @@ final class RestaurantTool extends Tool
         );
 
         $this->embeddingsProvider = $embeddingsProvider ?? new OpenAIEmbeddingsProvider(
-            key: self::env('OPENAI_API_KEY'),
+            key: $openaiApiKey,
             model: 'text-embedding-3-small',
         );
         $this->rerankProvider = $rerankProvider ?? new Anthropic(
-            key: self::env('ANTHROPIC_API_KEY'),
+            key: $anthropicApiKey,
             model: 'claude-sonnet-4-5-20250929',
         );
 
@@ -319,15 +321,5 @@ final class RestaurantTool extends Tool
             A2UIRenderTool::buildSurface($components, $surfaceId),
             \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR,
         );
-    }
-
-    private static function env(string $name): string
-    {
-        $value = $_ENV[$name] ?? getenv($name) ?: null;
-        if (null === $value || '' === $value) {
-            throw new \RuntimeException("Missing required environment variable: {$name}");
-        }
-
-        return (string) $value;
     }
 }
