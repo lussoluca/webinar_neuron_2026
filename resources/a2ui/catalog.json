@@ -1,0 +1,374 @@
+{
+  "catalogId": "https://sparkfabrik.com/catalogs/sf-chat/v1/catalog.json",
+  "components": {
+    "Text": {
+      "type": "object",
+      "description": "A block of text with an optional typographic variant.",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The text content to display."
+        },
+        "variant": {
+          "type": "string",
+          "description": "Typographic variant of the text.",
+          "enum": [
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "caption",
+            "body"
+          ]
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "Card": {
+      "type": "object",
+      "description": "A surface container that groups a single child component.",
+      "properties": {
+        "child": {
+          "type": "string",
+          "description": "Component id of the card content."
+        }
+      },
+      "required": [
+        "child"
+      ]
+    },
+    "Row": {
+      "type": "object",
+      "description": "A horizontal layout that arranges its children in a row.",
+      "properties": {
+        "justify": {
+          "type": "string",
+          "description": "Main-axis distribution of children.",
+          "enum": [
+            "start",
+            "center",
+            "end",
+            "stretch",
+            "spaceBetween",
+            "spaceAround",
+            "spaceEvenly"
+          ]
+        },
+        "align": {
+          "type": "string",
+          "description": "Cross-axis alignment of children.",
+          "enum": [
+            "start",
+            "center",
+            "end",
+            "stretch"
+          ]
+        },
+        "children": {
+          "type": "array",
+          "description": "Component ids rendered in order.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "children"
+      ]
+    },
+    "Column": {
+      "type": "object",
+      "description": "A vertical layout that arranges its children in a column.",
+      "properties": {
+        "justify": {
+          "type": "string",
+          "description": "Main-axis distribution of children.",
+          "enum": [
+            "start",
+            "center",
+            "end",
+            "stretch",
+            "spaceBetween",
+            "spaceAround",
+            "spaceEvenly"
+          ]
+        },
+        "align": {
+          "type": "string",
+          "description": "Cross-axis alignment of children.",
+          "enum": [
+            "start",
+            "center",
+            "end",
+            "stretch"
+          ]
+        },
+        "children": {
+          "type": "array",
+          "description": "Component ids rendered in order.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "children"
+      ]
+    },
+    "Button": {
+      "type": "object",
+      "description": "A clickable button that dispatches a server event or runs a local function.",
+      "properties": {
+        "child": {
+          "type": "string",
+          "description": "Component id of the button label."
+        },
+        "variant": {
+          "type": "string",
+          "description": "Button emphasis.",
+          "enum": [
+            "default",
+            "primary",
+            "borderless"
+          ],
+          "default": "default"
+        },
+        "action": {
+          "type": "object",
+          "description": "Action triggered on click: a server `event` or local `functionCall`.",
+          "properties": {
+            "event": {
+              "type": "object",
+              "description": "Server action dispatched to the host.",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Action identifier."
+                },
+                "context": {
+                  "type": "object",
+                  "description": "Dynamic key/value pairs forwarded with the action."
+                }
+              },
+              "required": [
+                "name"
+              ]
+            },
+            "functionCall": {
+              "type": "object",
+              "description": "Local client function invocation.",
+              "properties": {
+                "call": {
+                  "type": "string",
+                  "description": "Registered function name."
+                },
+                "args": {
+                  "type": "object",
+                  "description": "Function arguments."
+                }
+              },
+              "required": [
+                "call",
+                "args"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "child",
+        "action"
+      ]
+    },
+    "Image": {
+      "type": "object",
+      "description": "An image with an optional rendering variant.",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Image source URL."
+        },
+        "description": {
+          "type": "string",
+          "description": "Alternative text for accessibility."
+        },
+        "variant": {
+          "type": "string",
+          "description": "Rendering variant for the image.",
+          "enum": [
+            "icon",
+            "avatar",
+            "smallFeature",
+            "mediumFeature",
+            "largeFeature",
+            "header"
+          ]
+        },
+        "fit": {
+          "type": "string",
+          "description": "How the image fills its box.",
+          "enum": [
+            "contain",
+            "cover",
+            "fill",
+            "none",
+            "scaleDown"
+          ],
+          "default": "cover"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "TextField": {
+      "type": "object",
+      "description": "A single- or multi-line text input.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Field label."
+        },
+        "value": {
+          "type": "string",
+          "description": "Current value (two-way bound)."
+        },
+        "variant": {
+          "type": "string",
+          "description": "Kind of input field.",
+          "enum": [
+            "shortText",
+            "longText",
+            "number",
+            "obscured"
+          ],
+          "default": "shortText"
+        },
+        "validationRegexp": {
+          "type": "string",
+          "description": "Optional regular expression used to validate the value."
+        }
+      },
+      "required": []
+    },
+    "CheckBox": {
+      "type": "object",
+      "description": "A boolean checkbox with a label.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Checkbox label."
+        },
+        "value": {
+          "type": "boolean",
+          "description": "Whether the checkbox is checked (two-way bound)."
+        }
+      },
+      "required": []
+    },
+    "List": {
+      "type": "object",
+      "description": "A flexible list that lays out its children along an axis.",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "description": "Layout direction.",
+          "enum": [
+            "vertical",
+            "horizontal"
+          ],
+          "default": "vertical"
+        },
+        "align": {
+          "type": "string",
+          "description": "Cross-axis alignment of items.",
+          "enum": [
+            "start",
+            "center",
+            "end",
+            "stretch"
+          ]
+        },
+        "listStyle": {
+          "type": "string",
+          "description": "List marker style.",
+          "enum": [
+            "ordered",
+            "unordered",
+            "none"
+          ]
+        },
+        "children": {
+          "type": "array",
+          "description": "Component ids rendered in order.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "children"
+      ]
+    },
+    "Divider": {
+      "type": "object",
+      "description": "A horizontal or vertical separator line.",
+      "properties": {
+        "axis": {
+          "type": "string",
+          "description": "Orientation of the divider.",
+          "enum": [
+            "horizontal",
+            "vertical"
+          ],
+          "default": "horizontal"
+        }
+      },
+      "required": []
+    },
+    "Chart": {
+      "type": "object",
+      "description": "A data-visualization chart rendered as inline SVG. Project extension beyond the Basic Catalog.",
+      "properties": {
+        "chartType": {
+          "type": "string",
+          "description": "The kind of chart to draw.",
+          "enum": [
+            "line",
+            "bar",
+            "pie",
+            "donut",
+            "area"
+          ]
+        },
+        "series": {
+          "type": "array",
+          "description": "Chart data: an array of numbers (single series), or an array of { name, data } objects (multi-series).",
+          "items": {}
+        },
+        "labels": {
+          "type": "array",
+          "description": "Category/axis labels aligned to the data points.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "title": {
+          "type": "string",
+          "description": "Optional chart heading."
+        },
+        "legend": {
+          "type": "boolean",
+          "description": "Whether to show the legend. Defaults on for pie/donut, off otherwise."
+        }
+      },
+      "required": [
+        "chartType",
+        "series"
+      ]
+    }
+  }
+}

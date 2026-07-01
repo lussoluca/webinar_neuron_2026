@@ -1,0 +1,17 @@
+{
+    "_hash": "62a093ee2a538e095feb4ea8467cb76bb5e70b44c98390c7f4487d978b0caa70",
+    "patches": {
+        "neuron-core/neuron-ai": [
+            {
+                "package": "neuron-core/neuron-ai",
+                "description": "Improve AGUI spec compliance",
+                "url": "patches/neuron-ai-agui-spec-compliance.patch",
+                "sha256": "2b3dc61679743d40bb3dd24473c8c4cc3e841313dcb719dbe7f9a446cfe70479",
+                "depth": 1,
+                "extra": {
+                    "provenance": "patches-file:composer-patches.json"
+                }
+            }
+        ]
+    }
+}

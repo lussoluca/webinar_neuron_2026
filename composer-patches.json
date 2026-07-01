@@ -1,0 +1,7 @@
+{
+    "patches": {
+        "neuron-core/neuron-ai": {
+            "Improve AGUI spec compliance": "patches/neuron-ai-agui-spec-compliance.patch"
+        }
+    }
+}

@@ -1,0 +1,54 @@
+--- a/src/Chat/Messages/Stream/Adapters/AGUIAdapter.php
++++ b/src/Chat/Messages/Stream/Adapters/AGUIAdapter.php
+@@ -134,12 +134,21 @@
+         if (! isset($this->toolCallStarted[$toolCallId])) {
+             $this->toolCallStarted[$toolCallId] = true;
+ 
+-            yield $this->sse([
+-                'type' => 'TOOL_CALL_START',
+-                'toolCallId' => $toolCallId,
+-                'toolCallName' => $toolName,
+-                'parentMessageId' => $this->currentMessageId,
+-            ]);
++            $startEvent = [
++                'type' => 'TOOL_CALL_START',
++                'toolCallId' => $toolCallId,
++                'toolCallName' => $toolName,
++            ];
++
++            // parentMessageId is optional per AG-UI spec (parentMessageId?: string).
++            // Tool calls can precede any TEXT_MESSAGE_START, leaving currentMessageId
++            // null; omit the key in that case rather than emitting null, which fails
++            // strict client-side schema validation.
++            if (null !== $this->currentMessageId) {
++                $startEvent['parentMessageId'] = $this->currentMessageId;
++            }
++
++            yield $this->sse($startEvent);
+         }
+ 
+         // Stream tool arguments as JSON
+@@ -173,11 +182,14 @@
+         $toolName = $chunk->tool->getName();
+         $toolCallId = $this->toolCallIds[$toolName] ?? $this->generateId('call');
+ 
+-        // Emit tool result
+-        yield $this->sse([
+-            'type' => 'TOOL_CALL_RESULT',
+-            'toolCallId' => $toolCallId,
+-            'content' => $chunk->tool->getResult(),
+-            'role' => 'tool',
+-        ]);
++        // Emit tool result. messageId is REQUIRED by the AG-UI spec
++        // (ToolCallResultEvent.messageId: string); omitting it makes strict
++        // clients reject the event and truncate the stream.
++        yield $this->sse([
++            'type' => 'TOOL_CALL_RESULT',
++            'messageId' => $this->generateId('msg'),
++            'toolCallId' => $toolCallId,
++            'content' => $chunk->tool->getResult(),
++            'role' => 'tool',
++        ]);
+     }
+ 
+     public function start(): iterable
