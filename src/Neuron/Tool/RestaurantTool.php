@@ -63,7 +63,7 @@ final class RestaurantTool extends Tool
         );
         $this->rerankProvider = $rerankProvider ?? new Anthropic(
             key: $anthropicApiKey,
-            model: 'claude-sonnet-4-5-20250929',
+            model: 'claude-sonnet-5',
         );
 
         $projectDir = \dirname(__DIR__, 3);
